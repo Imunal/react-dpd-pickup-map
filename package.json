@@ -25,7 +25,8 @@
   "scripts": {
     "dev": "tsup  src/index.tsx --watch",
     "build": "tsup src/index.tsx --format cjs,esm --dts",
-    "lint": "tsc"
+    "lint": "tsc",
+    "release": "pnpm run build && changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
