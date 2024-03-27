@@ -1,5 +1,5 @@
 {
-  "name": "react-dpd-pickup-map",
+  "name": "@lilxjurk/react-dpd-pickup-map",
   "version": "0.0.1",
   "description": "React component for DPD Pickup Map",
   "main": "dist/index.js",
