@@ -1,6 +1,6 @@
 {
-  "name": "@lilxjurk/react-dpd-pickup-map",
-  "version": "0.0.2",
+  "name": "react-dpd-pickup-map",
+  "version": "0.0.1",
   "description": "React component for DPD Pickup Map",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -12,7 +12,7 @@
     "dpd pickup map",
     "react dpd"
   ],
-  "author": "Juliusz Kowalewski",
+  "author": "Juliusz Kowalewski @Imunal",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/Imunal/react-dpd-pickup-map/issues"
