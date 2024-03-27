@@ -1,0 +1,41 @@
+{
+  "name": "react-dpd-pickup-map",
+  "version": "0.0.1",
+  "description": "React component for DPD Pickup Map",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "keywords": [
+    "dpd",
+    "react",
+    "dpd pickup",
+    "dpd pickup map",
+    "react dpd"
+  ],
+  "author": "Juliusz Kowalewski",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Imunal/react-dpd-pickup-map/issues"
+  },
+  "homepage": "https://github.com/Imunal/react-dpd-pickup-map",
+  "repository": {
+    "type": "github",
+    "url": "https://github.com/Imunal/react-dpd-pickup-map"
+  },
+  "scripts": {
+    "dev": "tsup  src/index.tsx --watch",
+    "build": "tsup src/index.tsx --format cjs,esm --dts",
+    "lint": "tsc"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "@types/react": "^18.2.72",
+    "@types/react-dom": "^18.2.22",
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.3"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}
