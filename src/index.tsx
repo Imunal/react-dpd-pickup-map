@@ -1,123 +1,85 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
+import type { ReactDPDPickupMapProps } from "./types";
 
-//Type window
-declare const window: Window &
-  typeof globalThis & {
-    pointSelected: (pointID: string) => void;
-  };
-
-//Interface
-interface IReactDPDPickupMap {
-  authKey: string;
-  onPointSelect: (pointID: string) => void;
-  lang: "pl" | "de" | "se" | "fr";
-  country:
-    | "AT"
-    | "BE"
-    | "HR"
-    | "CZ"
-    | "DK"
-    | "EE"
-    | "FI"
-    | "FR"
-    | "ES"
-    | "NL"
-    | "LT"
-    | "LV"
-    | "DE"
-    | "PT"
-    | "SK"
-    | "SE"
-    | "HU"
-    | "IT"
-    | "PL";
-  services?: {
-    openLate?: boolean;
-    openSaturdays?: boolean;
-    openSundays?: boolean;
-    disabledFriendly?: boolean;
-    parking?: boolean;
-    directDelivery?: boolean;
-    directDeliveryCOD?: boolean;
-    dropOffOnline?: boolean;
-    dropOffOffline?: boolean;
-    swapParcel?: boolean;
-    dpdFood?: boolean;
-    fittingRoom?: boolean;
-    cardPayment?: boolean;
-    rod?: boolean;
-    dpdLQ?: boolean;
-    digitalLabel?: boolean;
-    swipBox?: boolean;
-    pointsWithServices?: boolean;
-  };
+// NOTE: window.pointSelected is a global callback required by the DPD widget.
+// Mounting more than one instance at a time will cause the callbacks to overwrite
+// each other, only the last-mounted instance will receive selection events.
+declare global {
+	interface Window {
+		pointSelected: (pointID: string) => void;
+	}
 }
 
-//Helper convert boolean to pseudo int
 const boolToInt = (value: boolean): string => (value ? "1" : "0");
 
 export const ReactDPDPickupMap = ({
-  authKey,
-  onPointSelect,
-  lang = "pl",
-  country = "PL",
-  services = {},
-}: IReactDPDPickupMap) => {
-  useEffect(() => {
-    //Make sure that element exist before mounting it.
-    const container = document.getElementById("dpd-widget-container");
-    if (!container) return;
+	authKey,
+	onPointSelect,
+	lang = "pl",
+	country = "PL",
+	services = {},
+}: ReactDPDPickupMapProps) => {
+	// Keep a stable ref so that a new onPointSelect identity does not re-inject the script on every parent render.
+	const onPointSelectRef = useRef(onPointSelect);
+	useEffect(() => {
+		onPointSelectRef.current = onPointSelect;
+	}, [onPointSelect]);
 
-    //Handle point selection.
-    window.pointSelected = (pointID: string) => onPointSelect(pointID);
+	useEffect(() => {
+		const container = document.getElementById("dpd-widget-container");
+		if (!container) return;
 
-    //Create query param
-    const queryParams = new URLSearchParams({
-      key: authKey,
-      lang,
-      country,
-      //Map
-      open_late: boolToInt(services.openLate || false),
-      open_saturdays: boolToInt(services.openSaturdays || false),
-      open_sundays: boolToInt(services.openSundays || false),
-      disabled_friendly: boolToInt(services.disabledFriendly || false),
-      parking: boolToInt(services.parking || false),
-      direct_delivery: boolToInt(services.directDelivery || false),
-      direct_delivery_cod: boolToInt(services.directDeliveryCOD || false),
-      dropoff_online: boolToInt(services.dropOffOnline || false),
-      dropoff_offline: boolToInt(services.dropOffOffline || false),
-      swap_parcel: boolToInt(services.swapParcel || false),
-      d_fresh: boolToInt(services.dpdFood || false),
-      fitting_room: boolToInt(services.fittingRoom || false),
-      card_payment: boolToInt(services.cardPayment || false),
-      rod: boolToInt(services.rod || false),
-      dpd_lq: boolToInt(services.dpdLQ || false),
-      digital_label: boolToInt(services.digitalLabel || false),
-      swip_box: boolToInt(services.swipBox || false),
-      points_with_services: boolToInt(services.pointsWithServices || false),
-    });
+		window.pointSelected = (pointID: string) =>
+			onPointSelectRef.current(pointID);
 
-    //Create script element
-    const script = document.createElement("script");
-    script.id = "dpd-widget";
-    script.src = `//pudofinder.dpd.com.pl/source/dpd_widget.js?${queryParams}`;
-    script.async = true;
+		const queryParams = new URLSearchParams({
+			key: authKey,
+			lang,
+			country,
+			open_late: boolToInt(services.openLate ?? false),
+			open_saturdays: boolToInt(services.openSaturdays ?? false),
+			open_sundays: boolToInt(services.openSundays ?? false),
+			disabled_friendly: boolToInt(services.disabledFriendly ?? false),
+			parking: boolToInt(services.parking ?? false),
+			direct_delivery: boolToInt(services.directDelivery ?? false),
+			direct_delivery_cod: boolToInt(services.directDeliveryCOD ?? false),
+			dropoff_online: boolToInt(services.dropOffOnline ?? false),
+			dropoff_offline: boolToInt(services.dropOffOffline ?? false),
+			swap_parcel: boolToInt(services.swapParcel ?? false),
+			d_fresh: boolToInt(services.dpdFood ?? false),
+			fitting_room: boolToInt(services.fittingRoom ?? false),
+			card_payment: boolToInt(services.cardPayment ?? false),
+			rod: boolToInt(services.rod ?? false),
+			dpd_lq: boolToInt(services.dpdLQ ?? false),
+			digital_label: boolToInt(services.digitalLabel ?? false),
+			swip_box: boolToInt(services.swipBox ?? false),
+			points_with_services: boolToInt(services.pointsWithServices ?? false),
+		});
 
-    //Append element
-    document.body.appendChild(script);
+		const script = document.createElement("script");
+		script.id = "dpd-widget";
+		script.src = `//pudofinder.dpd.com.pl/source/dpd_widget.js?${queryParams}`;
+		script.async = true;
+		script.onerror = () => {
+			console.error("[react-dpd-pickup-map] Failed to load DPD widget script.");
+		};
 
-    //Cleanup
-    return () => {
-      document.body.removeChild(script);
-      delete window.pointSelected;
-    };
-  }, [authKey, onPointSelect, lang, country, services]);
+		container.appendChild(script);
 
-  return (
-    <div id="dpd-widget-container">
-      <script id="dpd-widget"></script>
-    </div>
-  );
+		return () => {
+			container.removeChild(script);
+			delete window.pointSelected;
+		};
+	}, [authKey, lang, country, services]);
+
+	return <div id="dpd-widget-container" />;
 };
+
+export type {
+	DPDCountry,
+	DPDLang,
+	DPDServices,
+	ReactDPDPickupMapProps,
+} from "./types";
